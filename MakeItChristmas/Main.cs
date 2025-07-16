@@ -1,33 +1,44 @@
-﻿using System.Collections;
-using Silk;
-using Logger = Silk.Logger; // Alias for Silk.Logger to Logger
-using HarmonyLib; // Library for runtime method patching
+﻿using Silk;
+using Logger = Silk.Logger;
+using HarmonyLib;
+using UnityEngine;
+using System.Collections.Generic;
 
 namespace MakeItChristmas
 {
-    // SilkMod Attribute with with the format: name, authors, mod version, silk version, mod identifier, and networking type
-    [SilkMod("Make it Christmas", new[] { "Abstractmelon" }, "1.0.0", "0.5.0", "make-it-christmas", 2)]
+    [SilkMod("Make It Christmas", new[] { "Abstractmelon" }, "1.0.0", "0.6.1", "make-it-christmas", 1)]
     public class MakeItChristmas : SilkMod
     {
-        // Called by Silk when Unity loads this mod
+        public const string ModId = "make-it-christmas";
+
+        private Harmony _harmony;
+
         public override void Initialize()
         {
-            // Log mod started
-            Logger.LogInfo("Initializing Make it Christmas mod...");
+            Logger.LogInfo("Initializing Make It Christmas...");
 
-            // Create and apply Harmony patches
-            Harmony harmony = new Harmony("com.Abstractmelon.MakeItChristmas"); // Create a Harmony instance for patching
-            harmony.PatchAll(typeof(Patches)); // Apply all Harmony patches
+            // Load config with default "enableChristmas" set to true
+            var defaultConfig = new Dictionary<string, object>
+            {
+                { "enableChristmas", true }
+            };
+            Config.LoadModConfig(ModId, defaultConfig);
 
-            // Log mod finished
+            _harmony = new Harmony("com.Abstractmelon.MakeItChristmas");
+            _harmony.PatchAll(typeof(Patches));
+
             Logger.LogInfo("Harmony patches applied.");
         }
 
-        // Called by Silk when the mod is being unloaded, undo what your mod does in `Initialize()`
+        public void Awake()
+        {
+            Logger.LogInfo("Awake called.");
+        }
+
         public override void Unload()
         {
-            Logger.LogInfo("Unloading Make it Christmas mod...");
-            Harmony.UnpatchID("com.Abstractmelon.MakeItChristmas");
+            Logger.LogInfo("Unloading Make It Christmas...");
+            _harmony.UnpatchSelf();
         }
     }
 
@@ -35,9 +46,9 @@ namespace MakeItChristmas
     {
         [HarmonyPatch(typeof(SeasonChecker), nameof(SeasonChecker.IsItChristmas))]
         [HarmonyPrefix]
-        public static bool MakeItChristmas(ref bool __result)
+        public static bool MakeItChristmasPatch(ref bool __result)
         {
-            __result = true;
+            __result = Config.GetModConfigValue(MakeItChristmas.ModId, "enableChristmas", true);
             return false;
         }
     }
