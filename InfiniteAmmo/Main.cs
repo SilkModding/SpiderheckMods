@@ -2,54 +2,47 @@ using Silk;
 using Logger = Silk.Logger;
 using HarmonyLib;
 using UnityEngine;
-using System.Collections.Generic;
 
 namespace InfiniteAmmo
 {
     [SilkMod("Infinite Ammo", new[] { "Abstractmelon" }, "1.0.0", "0.7.0", "infinite-ammo", 1)]
     public class InfiniteAmmoMod : SilkMod
     {
-        public const string ModId = "infinite-ammo";
-
         private Harmony _harmony;
 
         public override void Initialize()
         {
             Logger.LogInfo("Initializing Infinite Ammo Mod...");
-
-            var defaultConfig = new Dictionary<string, object>
-            {
-                { "enabled", true }
-            };
-            Config.LoadModConfig(ModId, defaultConfig);
-
+            
             _harmony = new Harmony("com.abstractmelon.infiniteammo");
-            _harmony.PatchAll(typeof(Patches));
+            _harmony.Patch(
+                typeof(Weapon).GetMethod("FixedUpdate"),
+                postfix: new HarmonyMethod(typeof(Patches), nameof(Patches.FixedUpdatePostfix))
+            );
 
-            Logger.LogInfo("Harmony patches applied.");
-        }
-
-        public void Awake()
-        {
-            Logger.LogInfo("Awake called.");
+            Logger.LogInfo("Infinite Ammo Mod initialized successfully.");
         }
 
         public override void Unload()
         {
-            Logger.LogInfo("Unloading Infinite Ammo Mod...");
-            _harmony.UnpatchSelf();
+            _harmony?.UnpatchSelf();
         }
     }
 
+    [HarmonyPatch]
     public static class Patches
     {
-        [HarmonyPatch(typeof(Weapon), nameof(Weapon.ammo), MethodType.Getter)]
-        public class AmmoGetterPatch
+        public static void FixedUpdatePostfix(Weapon __instance)
         {
-            public static bool Prefix(Weapon __instance, ref float __result)
+            // Only run on server/host (clients can't modify NetworkVariables)
+            if (__instance.NetworkManager != null && 
+                (!__instance.NetworkManager.IsClient || __instance.NetworkManager.IsHost))
             {
-                __result = __instance.maxAmmo;
-                return false;
+                // Restore ammo to max if below threshold
+                if (__instance.ammo < __instance.maxAmmo - 0.01f)
+                {
+                    __instance.ammo = __instance.maxAmmo;
+                }
             }
         }
     }
