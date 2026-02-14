@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>NoSwordShrink</Title>
+    <Version>1.0.0</Version>
+    <Description>Swords don't shrink as you use them!</Description>
+    <Authors>Abstractmelon</Authors>
+    <OutputType>library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SilkLoader" Version="0.7.0" />
+    <PackageReference Include="SpiderHeck.GameLibs" Version="99.1.6.2" />
+  </ItemGroup>
+
+</Project>

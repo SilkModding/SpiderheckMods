@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Title>InfiniteAmmo</Title>
+    <Version>0.7.0</Version>
+    <Description>Weapons never run out of ammo!</Description>
+    <Authors>Abstractmelon</Authors>
+    <OutputType>library</OutputType>
+    <TargetFramework>net472</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="SilkLoader" Version="0.7.0" />
+    <PackageReference Include="SpiderHeck.GameLibs" Version="99.1.6.2" />
+  </ItemGroup>
+
+</Project>
